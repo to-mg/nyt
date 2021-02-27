@@ -139,6 +139,7 @@ fig.update_layout(
     width=1000,
     height=1200,
     title=dict(text=titolo, x=0.5, y=0.92),
+    margin=dict(t=90),
     plot_bgcolor="white",
     xaxis=dict(showticklabels=False, showgrid=False),
     yaxis=dict(showticklabels=False, showgrid=False),
@@ -168,3 +169,4 @@ for pos, testos, testod in zip(posizione, testo_sinistra, testo_destra):
     )
 fig.show()
 fig.write_html("decessi_italia.html")
+fig.write_json("decessi_italia.json", pretty=True)
