@@ -30,13 +30,13 @@ molt_larghezza = 1.4
 locale.setlocale(locale.LC_ALL, "")
 
 # scarica i dati della protezione civile
+"""
 url = (
     "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/"
     "dati-regioni/dpc-covid19-ita-regioni.csv"
 )
 """
-ifile = Path("dati") / "bollettini" / "dpc-italia.csv"
-"""
+url = "dpc-covid19-ita-regioni.csv" 
 dfi = pd.read_csv(url)
 # somma i decessi di tutte le regioni per ogni giorno
 deceduti_italia = dfi.groupby(["data"], as_index=False)["deceduti"].sum()
