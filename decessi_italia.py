@@ -26,7 +26,7 @@ dimensione_punto = 4
 opacita = 0.5
 intervallo = 10000
 molt_larghezza = 1.4
-
+font_size = 10
 locale.setlocale(locale.LC_ALL, "")
 
 # scarica i dati della protezione civile
@@ -36,7 +36,7 @@ url = (
     "dati-regioni/dpc-covid19-ita-regioni.csv"
 )
 """
-url = "dpc-covid19-ita-regioni.csv" 
+url = "dpc-covid19-ita-regioni.csv"
 dfi = pd.read_csv(url)
 # somma i decessi di tutte le regioni per ogni giorno
 deceduti_italia = dfi.groupby(["data"], as_index=False)["deceduti"].sum()
@@ -80,24 +80,27 @@ for idd, decessi_giorno in enumerate(decessi):
 # annotazioni
 fine = intervallo * math.ceil(totale_decessi / intervallo)
 inizio, delta = intervallo, intervallo
-offset_diecimila_precedente = 365
-# print(inizio, delta, fine)
+inizio_intervallo_precedente = len(decessi) - 1
 posizione = []
 testo_sinistra = []
 testo_destra = []
 righe_decessi = list(range(inizio, fine, delta))
 righe_decessi.append(totale_decessi)
 # ciclo di creazione delle annotazioni
-# for val in range(inizio, fine, delta):
 for idx, val in enumerate(righe_decessi):
     indice = deceduti_italia[deceduti_italia["deceduti"] < val].index[0] - 1
     riga = deceduti_italia.loc[indice, :]
+    # controlla che ci sia spazio per scrivere le annotazioni
+    # servono almeno 10 giorni
+    if (inizio_intervallo_precedente - riga.name) <= 10:
+        break
     posizione.append(riga.name)
     testo = (
-        f'<span style="color:red;font-size:10;">'
+        f'<span style="color:red;font-size:{font_size};">'
         f"{riga.dataf}</span><br>"
         f"<span style="
-        f'"color:red;font-size:12;font-weight:bold;text-align:left;">'
+        f'"color:red;font-size:{font_size+1};'
+        f'font-weight:bold;text-align:left;">'
         f"{riga.deceduti}</span>"
     )
     testo_sinistra.append(testo)
@@ -105,16 +108,13 @@ for idx, val in enumerate(righe_decessi):
         ""
         if idx == (len(righe_decessi) - 1)
         else (
-            f'<span style="color:red;font-size:10;">'
-            f"10000 decessi in<br>"
-            f"{offset_diecimila_precedente - riga.name} giorni</span>"
+            f'<span style="color:red;font-size:{font_size};">'
+            f"{intervallo} decessi in<br>"
+            f"{inizio_intervallo_precedente - riga.name} giorni</span>"
         )
     )
     testo_destra.append(testo)
-    offset_diecimila_precedente = riga.name
-
-# ultima riga
-
+    inizio_intervallo_precedente = riga.name
 
 # crea il grafico
 trace = go.Scattergl(
@@ -130,7 +130,7 @@ trace = go.Scattergl(
     hoverinfo="skip",
 )
 titolo = (
-    '<span style="font-size:20">Morti per Covid in Italia</span>'
+    '<span style="font-size:20">Morti per COVID 19 in Italia</span>'
     '<br><span style="font-size:14">'
     "Ogni punto rappresenta un decesso</span>"
 )
@@ -157,8 +157,8 @@ for pos in posizione:
         line=dict(color="red", width=1),
     )
 
-# annotazioni al superamento di multipli di 10000 decessi
-posizione = [item + 8 for item in posizione]
+# annotazioni al superamento di multipli di <intervallo> decessi
+posizione = [item + 6 for item in posizione]
 for pos, testos, testod in zip(posizione, testo_sinistra, testo_destra):
     fig.add_annotation(x=-90, y=pos, text=testos, showarrow=False)
     fig.add_annotation(
@@ -169,4 +169,4 @@ for pos, testos, testod in zip(posizione, testo_sinistra, testo_destra):
     )
 fig.show()
 fig.write_html("decessi_italia.html")
-fig.write_json("decessi_italia.json", pretty=True)
+# fig.write_json("decessi_italia.json", pretty=True)
